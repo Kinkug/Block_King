@@ -450,6 +450,19 @@ local UIListLayout = Instance.new("UIListLayout", alertFrame)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
+local alertFrame = Instance.new("Frame", ScreenGui)
+alertFrame.AnchorPoint = Vector2.new(1, 1)
+alertFrame.Position = UDim2.new(1, -10, 1, -10)
+alertFrame.Size = UDim2.new(0, 300, 0, 0)
+alertFrame.BackgroundTransparency = 1
+alertFrame.ClipsDescendants = true
+
+local UIListLayout = Instance.new("UIListLayout", alertFrame)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+local TweenService = game:GetService("TweenService")
+
 local function showAlert(playerName, rarity)
     local color = RARITY_COLORS[rarity] or Color3.new(1,1,1)
 
@@ -461,7 +474,7 @@ local function showAlert(playerName, rarity)
     alert.LayoutOrder = tick()
     alert.AnchorPoint = Vector2.new(0.5, 0.5)
     alert.Position = UDim2.new(0.5, 0, 0.5, 0)
-    alert.BackgroundTransparency = 1  -- เริ่มโปร่งใส
+    alert.BackgroundTransparency = 1
 
     local uicorner = Instance.new("UICorner", alert)
     uicorner.CornerRadius = UDim.new(0, 10)
@@ -482,20 +495,16 @@ local function showAlert(playerName, rarity)
     textLabel.TextSize = 15
     textLabel.TextColor3 = color
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Text = ("ชื่อผู้เล่น : %s   ระดับความแรร์ : %s"):format(playerName, rarity)
+    textLabel.Text = ("ชื่อผู้เล่น : %s ระดับความแรร์ : %s"):format(playerName, rarity)
 
-    -- ปรับขนาด alertFrame สูงขึ้นเพื่อรองรับ alert ใหม่
     alertFrame.Size = UDim2.new(0, 300, 0, alertFrame.Size.Y.Offset + 45)
 
-    local tweenService = game:GetService("TweenService")
-
-    -- สเกลเล็ก ๆ ก่อน (เหมือนลูกบอลกลิ้งมา)
     alert.Size = UDim2.new(0, 0, 0, 0)
     alert.Position = UDim2.new(0.5, 0, 0.5, 0)
 
-    local tweenInSize = tweenService:Create(alert, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0})
-    local tweenBounce = tweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1.05, 0, 0, 44)})
-    local tweenBounceBack = tweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 40)})
+    local tweenInSize = TweenService:Create(alert, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0})
+    local tweenBounce = TweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1.05, 0, 0, 44)})
+    local tweenBounceBack = TweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 40)})
 
     tweenInSize:Play()
     tweenInSize.Completed:Connect(function()
@@ -503,9 +512,8 @@ local function showAlert(playerName, rarity)
         tweenBounce.Completed:Connect(function()
             tweenBounceBack:Play()
             tweenBounceBack.Completed:Connect(function()
-                wait(3) -- แสดง alert 3 วิ
-
-                local tweenOut = tweenService:Create(alert, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
+                wait(3)
+                local tweenOut = TweenService:Create(alert, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
                 tweenOut:Play()
                 tweenOut.Completed:Connect(function()
                     alert:Destroy()
