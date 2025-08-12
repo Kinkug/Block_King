@@ -94,18 +94,6 @@ local function getHighestRarity(tools)
     return max
 end
 
-local function getHighestRarity(tools)
-    local order = {Common=1, Uncommon=2, Rare=3, Epic=4, Legendary=5, Omega=6}
-    local max = "Common"
-    for _, tool in ipairs(tools) do
-        local info = getWeaponInfo(tool)
-        if order[info.Rarity] and order[info.Rarity] > order[max] then
-            max = info.Rarity
-        end
-    end
-    return max
-end
-
 -- 🖼️ GUI
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local ScreenGui = Instance.new("ScreenGui", PlayerGui)
@@ -139,7 +127,7 @@ Instance.new("UICorner", resetButton).CornerRadius = UDim.new(0, 6)
 
 -- ปุ่มย่อ/ขยาย GUI
 local toggleButton = Instance.new("TextButton", listFrame)
-toggleButton.Size = UDim2.new(0, 40, 0, 30)
+toggleButton.Size = UDim2.new(0, 30, 0, 30)
 toggleButton.Position = UDim2.new(1, -40, 0, 0)
 toggleButton.Text = "<<"
 toggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -413,7 +401,6 @@ Players.PlayerRemoving:Connect(function(p)
     end
 end)
 
--- Toggle script on/off by toggleButton
 toggleButton.MouseButton1Click:Connect(function()
     scriptEnabled = not scriptEnabled
     if scriptEnabled then
@@ -430,7 +417,6 @@ toggleButton.MouseButton1Click:Connect(function()
         resetButton.Visible = false
         playerList.Visible = false
         invFrame.Visible = false
-        -- ลบแค่ปุ่ม ไม่ลบบิลบอร์ด
         for p, btn in pairs(playerButtons) do
             if btn then btn:Destroy() end
         end
@@ -450,19 +436,7 @@ local UIListLayout = Instance.new("UIListLayout", alertFrame)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Padding = UDim.new(0, 5)
 
-local alertFrame = Instance.new("Frame", ScreenGui)
-alertFrame.AnchorPoint = Vector2.new(1, 1)
-alertFrame.Position = UDim2.new(1, -10, 1, -10)
-alertFrame.Size = UDim2.new(0, 300, 0, 0)
-alertFrame.BackgroundTransparency = 1
-alertFrame.ClipsDescendants = true
-
-local UIListLayout = Instance.new("UIListLayout", alertFrame)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
-
-local TweenService = game:GetService("TweenService")
-
+-- ฟังก์ชันสร้าง alert เด้ง
 local function showAlert(playerName, rarity)
     local color = RARITY_COLORS[rarity] or Color3.new(1,1,1)
 
@@ -474,7 +448,7 @@ local function showAlert(playerName, rarity)
     alert.LayoutOrder = tick()
     alert.AnchorPoint = Vector2.new(0.5, 0.5)
     alert.Position = UDim2.new(0.5, 0, 0.5, 0)
-    alert.BackgroundTransparency = 1
+    alert.BackgroundTransparency = 1  -- เริ่มโปร่งใส
 
     local uicorner = Instance.new("UICorner", alert)
     uicorner.CornerRadius = UDim.new(0, 10)
@@ -495,16 +469,20 @@ local function showAlert(playerName, rarity)
     textLabel.TextSize = 15
     textLabel.TextColor3 = color
     textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Text = ("ชื่อผู้เล่น : %s ระดับความแรร์ : %s"):format(playerName, rarity)
+    textLabel.Text = ("ชื่อผู้เล่น : %s   ระดับความแรร์ : %s"):format(playerName, rarity)
 
+    -- ปรับขนาด alertFrame สูงขึ้นเพื่อรองรับ alert ใหม่
     alertFrame.Size = UDim2.new(0, 300, 0, alertFrame.Size.Y.Offset + 45)
 
+    local tweenService = game:GetService("TweenService")
+
+    -- สเกลเล็ก ๆ ก่อน (เหมือนลูกบอลกลิ้งมา)
     alert.Size = UDim2.new(0, 0, 0, 0)
     alert.Position = UDim2.new(0.5, 0, 0.5, 0)
 
-    local tweenInSize = TweenService:Create(alert, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0})
-    local tweenBounce = TweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1.05, 0, 0, 44)})
-    local tweenBounceBack = TweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 40)})
+    local tweenInSize = tweenService:Create(alert, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 0})
+    local tweenBounce = tweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1.05, 0, 0, 44)})
+    local tweenBounceBack = tweenService:Create(alert, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 40)})
 
     tweenInSize:Play()
     tweenInSize.Completed:Connect(function()
@@ -512,8 +490,9 @@ local function showAlert(playerName, rarity)
         tweenBounce.Completed:Connect(function()
             tweenBounceBack:Play()
             tweenBounceBack.Completed:Connect(function()
-                wait(3)
-                local tweenOut = TweenService:Create(alert, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
+                wait(5) -- แสดง alert 3 วิ
+
+                local tweenOut = tweenService:Create(alert, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1, Size = UDim2.new(0, 0, 0, 0)})
                 tweenOut:Play()
                 tweenOut.Completed:Connect(function()
                     alert:Destroy()
@@ -566,45 +545,20 @@ local function checkAndAlert(player)
     end
 end
 
+-- อัพเดตตรวจสอบทุกวินาทีครึ่ง
 spawn(function()
     while true do
-        if scriptEnabled then
-            refreshPlayerList()
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                checkAndAlert(p)
+            end
         end
-        wait(0.2)
+        wait(0.5)
     end
 end)
-
--- ฟัง event เกิดใหม่ของแต่ละผู้เล่นเพื่อไม่ให้ GUI หาย
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if scriptEnabled then
-            -- รีเฟรชปุ่มของผู้เล่นนี้ (สร้างใหม่)
-            if playerButtons[player] then
-                playerButtons[player]:Destroy()
-                playerButtons[player] = nil
-            end
-            createPlayerButton(player)
-        end
-    end)
-end)
-
--- สำหรับผู้เล่นที่อยู่ตอนเริ่มต้น ก็ใส่ listener ด้วย (กันกรณีรีสตาร์ท)
-for _, player in ipairs(Players:GetPlayers()) do
-    player.CharacterAdded:Connect(function()
-        if scriptEnabled then
-            if playerButtons[player] then
-                playerButtons[player]:Destroy()
-                playerButtons[player] = nil
-            end
-            createPlayerButton(player)
-        end
-    end)
-end
-
 
 -- ปิดสคริปต์ตอนเริ่มต้น (GUI อยู่แต่สคริปต์ไม่ทำงาน)
 scriptEnabled = true
 toggleButton.Text = "<<"
-resetButton.Visible = false
-playerList.Visible = false
+resetButton.Visible = true
+playerList.Visible = true
