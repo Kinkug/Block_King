@@ -558,20 +558,45 @@ local function checkAndAlert(player)
     end
 end
 
--- อัพเดตตรวจสอบทุกวินาทีครึ่ง
 spawn(function()
     while true do
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer then
-                checkAndAlert(p)
-            end
+        if scriptEnabled then
+            refreshPlayerList()
         end
-        wait(1.5)
+        wait(0.2)
     end
 end)
 
+-- ฟัง event เกิดใหม่ของแต่ละผู้เล่นเพื่อไม่ให้ GUI หาย
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if scriptEnabled then
+            -- รีเฟรชปุ่มของผู้เล่นนี้ (สร้างใหม่)
+            if playerButtons[player] then
+                playerButtons[player]:Destroy()
+                playerButtons[player] = nil
+            end
+            createPlayerButton(player)
+        end
+    end)
+end)
+
+-- สำหรับผู้เล่นที่อยู่ตอนเริ่มต้น ก็ใส่ listener ด้วย (กันกรณีรีสตาร์ท)
+for _, player in ipairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function()
+        if scriptEnabled then
+            if playerButtons[player] then
+                playerButtons[player]:Destroy()
+                playerButtons[player] = nil
+            end
+            createPlayerButton(player)
+        end
+    end)
+end
+
+
 -- ปิดสคริปต์ตอนเริ่มต้น (GUI อยู่แต่สคริปต์ไม่ทำงาน)
-scriptEnabled = false
+scriptEnabled = true
 toggleButton.Text = "<<"
 resetButton.Visible = false
 playerList.Visible = false
